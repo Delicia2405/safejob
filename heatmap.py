@@ -18,11 +18,41 @@ def load_and_process_data():
     # Risk Index = (cases / population) × severity weight
     df["raw_risk"] = (df["total_cases"] / df["population_millions"]) * df["severity_weight"]
 
-    # Normalize to 0–100
+   
+   # Normalize to 0–100
     min_r = df["raw_risk"].min()
     max_r = df["raw_risk"].max()
     df["risk_index"] = ((df["raw_risk"] - min_r) / (max_r - min_r)) * 100
     df["risk_index"] = df["risk_index"].round(1)
+
+    # Safety floor for known high-risk states
+    HIGH_RISK_FLOOR = {
+        "Delhi": 65,
+        "West Bengal": 70,
+        "Rajasthan": 60,
+        "Uttar Pradesh": 62,
+        "Maharashtra": 55,
+        "Assam": 58,
+    }
+    for state, floor in HIGH_RISK_FLOOR.items():
+        mask = df["state"] == state
+        df.loc[mask & (df["risk_index"] < floor), "risk_index"] = float(floor)
+
+    df["risk_index"] = df["risk_index"].round(1)
+
+    # Assign risk level
+    def get_level(score):
+        if score >= 80:
+            return "EXTREME"
+        elif score >= 60:
+            return "HIGH"
+        elif score >= 35:
+            return "MEDIUM"
+        else:
+            return "LOW"
+
+    df["level"] = df["risk_index"].apply(get_level)
+    
 
     # Assign risk level
     def get_level(score):

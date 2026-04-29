@@ -17,6 +17,8 @@
             background-image: radial-gradient(ellipse at 20% 50%, #1a1f3a 0%, transparent 60%),
                               radial-gradient(ellipse at 80% 20%, #1a0a0a 0%, transparent 50%);
         }
+        .risk-bar-fill.EXTREME  { background: linear-gradient(90deg, #4a0000, #8B0000); }
+        .location-hero.EXTREME  { background: linear-gradient(135deg, rgba(74,0,0,0.4), rgba(139,0,0,0.2)); border: 1px solid rgba(139,0,0,0.5); }
 
         nav {
             position: fixed;
@@ -347,16 +349,14 @@
     </div>
 
     {% set c = city_result %}
-    {% set risk = c.get('risk_level', 'UNKNOWN') %}
+    {% set risk = c.get('level', 'UNKNOWN') %}
 
     <!-- LOCATION HERO -->
-    <div class="location-hero {{ risk }}">
-        <div class="city-name">{{ c.get('city', 'Unknown') }}</div>
-        <div class="risk-level">{{ risk }} RISK ZONE</div>
-        <div class="risk-score-display">
-            Location Risk Score: {{ "%.0f"|format(c.get('risk_score', 0) * 100) }}/100
-        </div>
-    </div>
+    <div class="city-name">{{ c.get('city_queried', 'Unknown') }}</div>
+    <div class="risk-level">{{ risk }} RISK ZONE</div>
+    <div class="risk-score-display">
+         {{ c.get('state', '') }} · Risk Index: {{ c.get('risk_index', 0) }}/100 · Cases (2022): {{ c.get('cases_2022', 'N/A') }}
+</div>
 
     <!-- RISK BAR -->
     <div class="risk-bar-section">
@@ -440,9 +440,9 @@
 </div>
 
 <script>
-    const riskScore = {{ c.get('risk_score', 0.5) or 0.5 }};
+   const riskScore = {{ c.get('risk_index', 50) or 50 }};
     setTimeout(() => {
-        document.getElementById('riskBar').style.width = (riskScore * 100) + '%';
+         document.getElementById('riskBar').style.width = riskScore + '%';
     }, 400);
 </script>
 

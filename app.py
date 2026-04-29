@@ -104,6 +104,8 @@ def check_job():
 @app.route('/results/words')
 def results_words():
     r = session.get('results', {})
+    if not r:
+        return render_template('check.html')
     return render_template('result_words.html',
         explanation=r.get('explanation', []),
         verdict=r.get('verdict', 'MEDIUM')
@@ -113,6 +115,8 @@ def results_words():
 @app.route('/results/salary')
 def results_salary():
     r = session.get('results', {})
+    if not r:
+        return render_template('check.html')
     return render_template('result_salary.html',
         salary_result=r.get('salary_result', {}),
         verdict=r.get('verdict', 'MEDIUM')
@@ -122,6 +126,8 @@ def results_salary():
 @app.route('/results/location')
 def results_location():
     r = session.get('results', {})
+    if not r:
+        return render_template('check.html')
     return render_template('result_location.html',
         city_result=r.get('city_result', {}),
         verdict=r.get('verdict', 'MEDIUM'),
@@ -129,7 +135,6 @@ def results_location():
         description=r.get('description', ''),
         job_title=r.get('job_title', '')
     )
-
 
 @app.route('/report', methods=['POST'])
 def report_job():
@@ -154,6 +159,16 @@ def report_job():
 
     return render_template('report_success.html')
 
+@app.route('/results/score')
+def results_score():
+    r = session.get('results', {})
+    if not r:
+        return render_template('check.html')
+    return render_template('result_score.html',
+        final_score=r.get('final_score', 0),
+        verdict=r.get('verdict', 'MEDIUM'),
+        job_title=r.get('job_title', '')
+    )
 
 init_db()
 

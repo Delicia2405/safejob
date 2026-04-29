@@ -307,25 +307,29 @@
     {% set s = salary_result %}
 
     <!-- VERDICT CARD -->
-    {% if s.get('status') == 'suspicious' %}
-    <div class="verdict-card suspicious">
-        <div class="verdict-emoji">🚨</div>
-        <div class="verdict-label">Salary Looks Suspicious</div>
-        <div class="verdict-detail">{{ s.get('message', 'The offered salary is significantly higher than market average — a common trafficking tactic to lure victims.') }}</div>
+    {% if s.get('anomaly') %}
+<div class="verdict-card suspicious">
+    <div class="verdict-emoji">🚨</div>
+    <div class="verdict-label">Salary Looks Suspicious</div>
+    <div class="verdict-detail">
+        The offered salary is <strong>{{ s.get('z_score') }}x</strong> standard deviations from the market average for a <strong>{{ s.get('category') }}</strong> — a common tactic used by traffickers to lure victims with unrealistic promises.
     </div>
-    {% elif s.get('status') == 'normal' %}
-    <div class="verdict-card normal">
-        <div class="verdict-emoji">✅</div>
-        <div class="verdict-label">Salary Looks Normal</div>
-        <div class="verdict-detail">{{ s.get('message', 'The offered salary falls within a reasonable range for this type of job.') }}</div>
+</div>
+{% elif s.get('market_avg') %}
+<div class="verdict-card normal">
+    <div class="verdict-emoji">✅</div>
+    <div class="verdict-label">Salary Looks Normal</div>
+    <div class="verdict-detail">
+        The offered salary falls within a reasonable range for a <strong>{{ s.get('category') }}</strong> role in India. No salary-based red flags detected.
     </div>
-    {% else %}
-    <div class="verdict-card unknown">
-        <div class="verdict-emoji">❓</div>
-        <div class="verdict-label">Job Category Unknown</div>
-        <div class="verdict-detail">We couldn't match this job title to our salary database. This doesn't mean the job is safe — verify independently.</div>
-    </div>
-    {% endif %}
+</div>
+{% else %}
+<div class="verdict-card unknown">
+    <div class="verdict-emoji">❓</div>
+    <div class="verdict-label">Job Category Unknown</div>
+    <div class="verdict-detail">We couldn't match this job title to our salary database. This doesn't mean the job is safe — verify independently.</div>
+</div>
+{% endif %}
 
     <!-- STATS -->
     <div class="stats-grid">
