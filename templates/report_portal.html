@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeJob — Report a Job</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e1a;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 20% 50%, #1a1f3a 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, #1a0a0a 0%, transparent 50%);
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10,14,26,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .nav-brand {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            letter-spacing: 2px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .nav-brand span { color: #e63946; }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #8892a4;
+            text-decoration: none;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover { color: #ffffff; }
+        .nav-links a.active { color: #e63946; }
+
+        .nav-cta {
+            padding: 10px 24px;
+            background: #e63946;
+            border-radius: 8px;
+            color: white !important;
+            font-weight: 700 !important;
+            transition: all 0.3s !important;
+        }
+
+        .nav-cta:hover {
+            background: #c1121f !important;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(230,57,70,0.4);
+        }
+
+        .page {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 120px 20px 80px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .page-header h1 span { color: #e63946; }
+
+        .page-header p {
+            color: #8892a4;
+            font-size: 15px;
+            line-height: 1.7;
+            max-width: 540px;
+            margin: 0 auto;
+        }
+
+        /* ── WHY REPORT ── */
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+            animation: fadeIn 0.6s ease 0.1s both;
+        }
+
+        .why-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .why-icon { font-size: 28px; margin-bottom: 10px; }
+
+        .why-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .why-desc { font-size: 12px; color: #8892a4; line-height: 1.5; }
+
+        /* ── FORM ── */
+        .form-card {
+            background: rgba(230,57,70,0.04);
+            border: 1px solid rgba(230,57,70,0.2);
+            border-radius: 20px;
+            padding: 40px;
+            animation: fadeIn 0.6s ease 0.2s both;
+        }
+
+        .form-section-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            color: #e63946;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(230,57,70,0.2);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #8892a4;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: #e63946;
+            background: rgba(230,57,70,0.05);
+            box-shadow: 0 0 0 3px rgba(230,57,70,0.1);
+        }
+
+        input::placeholder, textarea::placeholder { color: #4a5568; }
+        textarea { resize: vertical; min-height: 120px; }
+        select option { background: #1a1f3a; }
+
+        .divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin: 24px 0;
+        }
+
+        .privacy-note {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #8892a4;
+            line-height: 1.6;
+        }
+
+        .privacy-note strong { color: #ffffff; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(230,57,70,0.4);
+        }
+
+        /* ── HELPLINE ── */
+        .helpline-box {
+            background: linear-gradient(135deg, #003366, #001a4d);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            margin-top: 24px;
+            animation: fadeIn 0.6s ease 0.3s both;
+        }
+
+        .helpline-box .label {
+            font-size: 13px;
+            color: #8892a4;
+            margin-bottom: 8px;
+        }
+
+        .helpline-number {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #ffffff;
+        }
+
+        .helpline-sub {
+            font-size: 12px;
+            color: #8892a4;
+            margin-top: 6px;
+        }
+
+        @media (max-width: 600px) {
+            .why-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-card { padding: 24px; }
+            .page-header h1 { font-size: 36px; }
+            nav .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">SAFE<span>JOB</span></a>
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/check-job">Check a Job</a></li>
+        <li><a href="/report-portal" class="active">Report a Job</a></li>
+        <li><a href="/check-job" class="nav-cta">Get Started</a></li>
+    </ul>
+</nav>
+
+<div class="page">
+
+    <div class="page-header">
+        <h1>🚩 Report a <span>Suspicious Job</span></h1>
+        <p>Your report helps protect others. Every report is reviewed and added to our training dataset to make SafeJob smarter.</p>
+    </div>
+
+    <!-- WHY REPORT -->
+    <div class="why-grid">
+        <div class="why-card">
+            <div class="why-icon">🛡️</div>
+            <div class="why-title">Protect Others</div>
+            <div class="why-desc">Your report warns other workers about the same scam before they fall victim</div>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">🤖</div>
+            <div class="why-title">Train the AI</div>
+            <div class="why-desc">Every 30 reports automatically retrains our model to catch new fraud patterns</div>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">🔒</div>
+            <div class="why-title">Stay Anonymous</div>
+            <div class="why-desc">You don't need to share your name or personal details to submit a report</div>
+        </div>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-card">
+        <form action="/report" method="POST">
+
+            <div class="form-section-title">📋 Job Information</div>
+
+            <div class="form-group">
+                <label>Job Description / Ad Text</label>
+                <textarea name="job_description" placeholder="Paste the full job posting, WhatsApp message, or ad text here..." required></textarea>
+            </div>
+
+            <hr class="divider">
+
+            <div class="form-section-title">📞 Recruiter Details</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Recruiter Contact</label>
+                    <input type="text" name="recruiter_contact" placeholder="Phone, email, or WhatsApp number">
+                </div>
+                <div class="form-group">
+                    <label>Platform Where You Saw This</label>
+                    <select name="platform">
+                        <option value="">Select platform...</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="OLX">OLX</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Telegram">Telegram</option>
+                        <option value="Newspaper">Newspaper</option>
+                        <option value="Word of Mouth">Word of Mouth</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="privacy-note">
+                🔒 <strong>Your privacy is protected.</strong> We do not collect your name, phone number, or any personal information unless you choose to share it. Reports are used only to improve SafeJob's detection accuracy.
+            </div>
+
+            <button type="submit" class="submit-btn">🚨 Submit Report</button>
+        </form>
+    </div>
+
+    <!-- HELPLINE -->
+    <div class="helpline-box">
+        <div class="label">📞 In immediate danger? Call the National Anti-Trafficking Helpline</div>
+        <div class="helpline-number">1800-419-8588</div>
+        <div class="helpline-sub">Free · Confidential · Available 24/7</div>
+    </div>
+
+</div>
+
+</body>
+</html>

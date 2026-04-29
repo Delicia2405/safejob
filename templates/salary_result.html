@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeJob — Location Risk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e1a;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 100px 20px 60px;
+            background-image: radial-gradient(ellipse at 20% 50%, #1a1f3a 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, #1a0a0a 0%, transparent 50%);
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10,14,26,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .nav-brand {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            letter-spacing: 2px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .nav-brand span { color: #e63946; }
+
+        .step-indicator {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .step {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px; font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.15);
+            color: #8892a4;
+        }
+
+        .step.active { background: #e63946; border-color: #e63946; color: white; }
+        .step.done   { background: rgba(144,238,144,0.2); border-color: #90EE90; color: #90EE90; }
+        .step-line   { width: 30px; height: 2px; background: rgba(255,255,255,0.1); }
+
+        .page { max-width: 720px; margin: 0 auto; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 44px;
+            margin-bottom: 10px;
+        }
+
+        .page-header h1 span { color: #e63946; }
+        .page-header p { color: #8892a4; font-size: 14px; line-height: 1.6; }
+
+        /* ── LOCATION CARD ── */
+        .location-hero {
+            border-radius: 20px;
+            padding: 36px;
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease 0.1s both;
+        }
+
+        .location-hero.CRITICAL { background: linear-gradient(135deg, rgba(139,0,0,0.3), rgba(230,57,70,0.15)); border: 1px solid rgba(230,57,70,0.4); }
+        .location-hero.HIGH     { background: linear-gradient(135deg, rgba(124,45,0,0.3), rgba(255,102,0,0.15)); border: 1px solid rgba(255,102,0,0.4); }
+        .location-hero.MEDIUM   { background: linear-gradient(135deg, rgba(122,96,0,0.3), rgba(255,215,0,0.1)); border: 1px solid rgba(255,215,0,0.3); }
+        .location-hero.LOW      { background: linear-gradient(135deg, rgba(0,60,20,0.3), rgba(144,238,144,0.08)); border: 1px solid rgba(144,238,144,0.3); }
+        .location-hero.UNKNOWN  { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); }
+
+        .city-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .risk-level {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .location-hero.CRITICAL .risk-level { color: #e63946; }
+        .location-hero.HIGH     .risk-level { color: #FF6600; }
+        .location-hero.MEDIUM   .risk-level { color: #FFD700; }
+        .location-hero.LOW      .risk-level { color: #90EE90; }
+        .location-hero.UNKNOWN  .risk-level { color: #8892a4; }
+
+        .risk-score-display {
+            font-size: 13px;
+            color: #8892a4;
+        }
+
+        /* ── RISK BAR ── */
+        .risk-bar-section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 26px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease 0.2s both;
+        }
+
+        .risk-bar-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            color: #8892a4;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+        }
+
+        .risk-bar-wrap {
+            background: rgba(255,255,255,0.06);
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1.5s ease 0.4s;
+        }
+
+        .risk-bar-fill.CRITICAL { background: linear-gradient(90deg, #8B0000, #e63946); }
+        .risk-bar-fill.HIGH     { background: linear-gradient(90deg, #7c2d00, #FF6600); }
+        .risk-bar-fill.MEDIUM   { background: linear-gradient(90deg, #7a6000, #FFD700); }
+        .risk-bar-fill.LOW      { background: linear-gradient(90deg, #1a4a2e, #90EE90); }
+        .risk-bar-fill.UNKNOWN  { background: rgba(255,255,255,0.2); }
+
+        .risk-bar-sub { font-size: 12px; color: #4a5568; }
+
+        /* ── ADVICE CARDS ── */
+        .advice-section { margin-bottom: 24px; animation: fadeIn 0.5s ease 0.3s both; }
+
+        .advice-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            margin-bottom: 14px;
+            color: #ffffff;
+        }
+
+        .advice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .advice-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 18px;
+            font-size: 13px;
+            color: #8892a4;
+            line-height: 1.6;
+        }
+
+        .advice-card .icon { font-size: 22px; margin-bottom: 8px; }
+        .advice-card strong { color: #ffffff; display: block; margin-bottom: 4px; font-size: 14px; }
+
+        /* ── FINAL SUMMARY ── */
+        .final-summary {
+            border-radius: 20px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease 0.4s both;
+        }
+
+        .final-summary.danger {
+            background: linear-gradient(135deg, rgba(139,0,0,0.4), rgba(230,57,70,0.2));
+            border: 1px solid rgba(230,57,70,0.4);
+        }
+
+        .final-summary.caution {
+            background: linear-gradient(135deg, rgba(122,96,0,0.3), rgba(255,215,0,0.1));
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+
+        .final-summary.safe {
+            background: linear-gradient(135deg, rgba(0,60,20,0.3), rgba(144,238,144,0.08));
+            border: 1px solid rgba(144,238,144,0.3);
+        }
+
+        .final-summary h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .final-summary p { color: #8892a4; font-size: 14px; line-height: 1.7; }
+
+        /* ── HELPLINE ── */
+        .helpline-box {
+            background: linear-gradient(135deg, #003366, #001a4d);
+            border: 1px solid rgba(100,149,237,0.3);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeIn 0.5s ease 0.5s both;
+        }
+
+        .helpline-box .label { font-size: 13px; color: #8892a4; margin-bottom: 8px; }
+
+        .helpline-number {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #ffffff;
+        }
+
+        .helpline-sub { font-size: 12px; color: #8892a4; margin-top: 6px; }
+
+        /* ── ACTION BUTTONS ── */
+        .action-buttons {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 16px;
+            animation: fadeIn 0.5s ease 0.6s both;
+        }
+
+        .btn-report {
+            flex: 1;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .btn-report:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+        .btn-check-again {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .btn-check-again:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(230,57,70,0.4);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            padding: 14px 28px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #8892a4;
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .step-hint { font-size: 12px; color: #4a5568; text-align: center; margin-top: 10px; }
+
+        @media (max-width: 600px) {
+            .advice-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+            .page-header h1 { font-size: 34px; }
+            nav .step-indicator { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">SAFE<span>JOB</span></a>
+    <div class="step-indicator">
+        <div class="step done">✓</div>
+        <div class="step-line"></div>
+        <div class="step done">✓</div>
+        <div class="step-line"></div>
+        <div class="step done">✓</div>
+        <div class="step-line"></div>
+        <div class="step active">4</div>
+    </div>
+</nav>
+
+<div class="page">
+
+    <div class="page-header">
+        <h1>📍 <span>Location</span> Risk</h1>
+        <p>We check the destination city against NCRB trafficking crime data to assess geographic risk.</p>
+    </div>
+
+    {% set c = city_result %}
+    {% set risk = c.get('risk_level', 'UNKNOWN') %}
+
+    <!-- LOCATION HERO -->
+    <div class="location-hero {{ risk }}">
+        <div class="city-name">{{ c.get('city', 'Unknown') }}</div>
+        <div class="risk-level">{{ risk }} RISK ZONE</div>
+        <div class="risk-score-display">
+            Location Risk Score: {{ "%.0f"|format(c.get('risk_score', 0) * 100) }}/100
+        </div>
+    </div>
+
+    <!-- RISK BAR -->
+    <div class="risk-bar-section">
+        <div class="risk-bar-label">📊 Location Risk Level</div>
+        <div class="risk-bar-wrap">
+            <div class="risk-bar-fill {{ risk }}" id="riskBar"></div>
+        </div>
+        <div class="risk-bar-sub">
+            {% if risk == 'CRITICAL' %}This city/state has extremely high trafficking incident rates per NCRB data
+            {% elif risk == 'HIGH' %}Significantly elevated trafficking risk — extra caution required
+            {% elif risk == 'MEDIUM' %}Moderate trafficking incidents reported — proceed with care
+            {% elif risk == 'LOW' %}Lower trafficking risk — still verify all details independently
+            {% else %}City not found in our database — treat as medium risk and verify carefully
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ADVICE -->
+    <div class="advice-section">
+        <div class="advice-title">🛡️ What You Should Do</div>
+        <div class="advice-grid">
+            <div class="advice-card">
+                <div class="icon">📋</div>
+                <strong>Verify the Employer</strong>
+                Check if the company is registered. Look them up on MCA21 (India's company registry) or search their GST number.
+            </div>
+            <div class="advice-card">
+                <div class="icon">🤝</div>
+                <strong>Never Pay Upfront</strong>
+                Legitimate employers never ask for placement fees, visa fees, or deposits. Any upfront payment is a major red flag.
+            </div>
+            <div class="advice-card">
+                <div class="icon">📞</div>
+                <strong>Tell Someone You Trust</strong>
+                Before traveling for any job, share full details — employer name, address, contact — with a trusted family member.
+            </div>
+            <div class="advice-card">
+                <div class="icon">📄</div>
+                <strong>Get Everything in Writing</strong>
+                Demand a signed contract before you travel or pay anything. If they refuse, walk away immediately.
+            </div>
+        </div>
+    </div>
+
+    <!-- FINAL VERDICT -->
+    {% if verdict in ['CRITICAL', 'HIGH'] %}
+    <div class="final-summary danger">
+        <h2>🚨 Our Recommendation: Do NOT Proceed</h2>
+        <p>Multiple risk factors detected across AI analysis, salary check, and location data. This job shows strong signs of a trafficking trap. Do not travel, do not pay any fees, and report this job using the button below.</p>
+    </div>
+    {% elif verdict == 'MEDIUM' %}
+    <div class="final-summary caution">
+        <h2>⚠️ Proceed With Extreme Caution</h2>
+        <p>Some risk factors were detected. This job may be legitimate but has suspicious elements. Verify the employer independently, demand a written contract, and tell a trusted person all details before proceeding.</p>
+    </div>
+    {% else %}
+    <div class="final-summary safe">
+        <h2>✅ Looks Relatively Safe — But Always Verify</h2>
+        <p>No major red flags detected. However, always verify employers independently, never pay upfront fees, and share job details with someone you trust before proceeding.</p>
+    </div>
+    {% endif %}
+
+    <!-- HELPLINE -->
+    <div class="helpline-box">
+        <div class="label">📞 In immediate danger? Call the National Anti-Trafficking Helpline</div>
+        <div class="helpline-number">1800-419-8588</div>
+        <div class="helpline-sub">Free · Confidential · Available 24/7</div>
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="action-buttons">
+        <a href="/report-portal" class="btn-report">🚩 Report This Job</a>
+        <a href="/check-job" class="btn-check-again">⚡ Check Another Job</a>
+    </div>
+
+    <div class="nav-buttons">
+        <a href="/results/salary" class="back-btn">← Back</a>
+    </div>
+    <div class="step-hint">Step 4 of 4 — Analysis Complete</div>
+
+</div>
+
+<script>
+    const riskScore = {{ c.get('risk_score', 0.5) or 0.5 }};
+    setTimeout(() => {
+        document.getElementById('riskBar').style.width = (riskScore * 100) + '%';
+    }, 400);
+</script>
+
+</body>
+</html>

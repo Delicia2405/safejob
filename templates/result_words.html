@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeJob — Word Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0e1a;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 100px 20px 60px;
+            background-image: radial-gradient(ellipse at 20% 50%, #1a1f3a 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, #1a0a0a 0%, transparent 50%);
+        }
+
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 18px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10,14,26,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .nav-brand {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 26px;
+            letter-spacing: 2px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .nav-brand span { color: #e63946; }
+
+        .step-indicator {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .step {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.15);
+            color: #8892a4;
+        }
+
+        .step.active {
+            background: #e63946;
+            border-color: #e63946;
+            color: white;
+        }
+
+        .step.done {
+            background: rgba(144,238,144,0.2);
+            border-color: #90EE90;
+            color: #90EE90;
+        }
+
+        .step-line {
+            width: 30px;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .page {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header h1 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 44px;
+            margin-bottom: 10px;
+        }
+
+        .page-header h1 span { color: #e63946; }
+
+        .page-header p {
+            color: #8892a4;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* ── WORD CARDS ── */
+        .words-section {
+            margin-bottom: 30px;
+        }
+
+        .section-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .section-label.risky {
+            background: rgba(230,57,70,0.15);
+            color: #e63946;
+            border: 1px solid rgba(230,57,70,0.3);
+        }
+
+        .section-label.safe {
+            background: rgba(144,238,144,0.1);
+            color: #90EE90;
+            border: 1px solid rgba(144,238,144,0.3);
+        }
+
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+
+        .word-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .word-card:hover {
+            transform: translateY(-2px) !important;
+        }
+
+        .word-card.risky {
+            border-color: rgba(230,57,70,0.3);
+            background: rgba(230,57,70,0.06);
+        }
+
+        .word-card.safe {
+            border-color: rgba(144,238,144,0.2);
+            background: rgba(144,238,144,0.04);
+        }
+
+        .word-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .word-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .word-card.risky .word-text { color: #ff8a94; }
+        .word-card.safe .word-text  { color: #90EE90; }
+
+        .word-score {
+            font-size: 13px;
+            color: #8892a4;
+            margin-bottom: 8px;
+        }
+
+        .word-reason {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .word-card.risky .word-reason {
+            background: rgba(230,57,70,0.15);
+            color: #ff8a94;
+        }
+
+        .word-card.safe .word-reason {
+            background: rgba(144,238,144,0.1);
+            color: #90EE90;
+        }
+
+        .score-bar {
+            height: 4px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .word-card.risky .score-bar { background: rgba(230,57,70,0.3); }
+        .word-card.safe .score-bar  { background: rgba(144,238,144,0.2); }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .word-card.risky .score-bar-fill { background: #e63946; }
+        .word-card.safe .score-bar-fill  { background: #90EE90; }
+
+        /* ── EMPTY STATE ── */
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #8892a4;
+            font-size: 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed rgba(255,255,255,0.08);
+            border-radius: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* ── NAVIGATION ── */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            padding: 14px 28px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #8892a4;
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+
+        .next-btn {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(230,57,70,0.4);
+        }
+
+        .step-hint {
+            font-size: 12px;
+            color: #4a5568;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .words-grid { grid-template-columns: 1fr 1fr; }
+            .page-header h1 { font-size: 34px; }
+            nav .step-indicator { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">SAFE<span>JOB</span></a>
+    <div class="step-indicator">
+        <div class="step done">✓</div>
+        <div class="step-line"></div>
+        <div class="step active">2</div>
+        <div class="step-line"></div>
+        <div class="step">3</div>
+        <div class="step-line"></div>
+        <div class="step">4</div>
+    </div>
+</nav>
+
+<div class="page">
+
+    <div class="page-header">
+        <h1>🤖 <span>Word</span> Analysis</h1>
+        <p>Our AI highlighted the words that pushed the risk score up or down. Red = suspicious. Green = normal.</p>
+    </div>
+
+    <!-- RISKY WORDS -->
+    {% set risky_words = explanation | selectattr("type", "equalto", "risky") | list %}
+    {% set safe_words = explanation | selectattr("type", "equalto", "safe") | list %}
+
+    {% if risky_words %}
+        <div class="words-section">
+            <div class="section-label risky">🚨 {{ risky_words | length }} Suspicious Words Found</div>
+            <div class="words-grid" id="riskyGrid">
+                {% for item in risky_words %}
+                <div class="word-card risky" data-score="{{ item.score | abs }}" data-index="{{ loop.index }}">
+                    <div class="word-text">{{ item.word }}</div>
+                    <div class="word-score">Score: +{{ item.score }}</div>
+                    <div class="word-reason">{{ item.reason }}</div>
+                    <div class="score-bar">
+                        <div class="score-bar-fill" style="width: 0%" data-width="{{ [item.score * 300, 100] | min }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty">✅ No suspicious words detected in this job description.</div>
+    {% endif %}
+
+    <!-- SAFE WORDS -->
+    {% if safe_words %}
+        <div class="words-section">
+            <div class="section-label safe">✅ {{ safe_words | length }} Normal Words</div>
+            <div class="words-grid" id="safeGrid">
+                {% for item in safe_words %}
+                <div class="word-card safe" data-index="{{ loop.index }}">
+                    <div class="word-text">{{ item.word }}</div>
+                    <div class="word-score">Score: {{ item.score }}</div>
+                    <div class="word-reason">{{ item.reason }}</div>
+                    <div class="score-bar">
+                        <div class="score-bar-fill" style="width: 0%" data-width="{{ [item.score | abs * 300, 100] | min }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- NAV BUTTONS -->
+    <div class="nav-buttons">
+        <a href="/results/score" class="back-btn">← Back</a>
+        <a href="/results/salary" class="next-btn">Salary Check →</a>
+    </div>
+    <div class="step-hint">Step 2 of 4</div>
+
+</div>
+
+<script>
+    // Animate cards in with stagger
+    const cards = document.querySelectorAll('.word-card');
+    cards.forEach((card, i) => {
+        setTimeout(() => {
+            card.classList.add('visible');
+            // animate score bars
+            const bar = card.querySelector('.score-bar-fill');
+            if (bar) {
+                setTimeout(() => {
+                    bar.style.width = bar.dataset.width;
+                }, 200);
+            }
+        }, i * 100);
+    });
+</script>
+
+</body>
+</html>
